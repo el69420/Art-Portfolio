@@ -19,7 +19,6 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
             <span class="cover-label">Sketchbook</span>
             <span class="cover-sub">Vol. I</span>
           </div>
-          <button class="cover-open-btn" id="coverOpenBtn" aria-label="Open sketchbook">Open</button>
         </div>
       </div>
 
@@ -74,45 +73,36 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         );
       })}
 
-      <!-- Page edge stack -->
-      <div class="page-edges" id="pageEdges">
-        {[...Array(pages.length + 1)].map((_, i) => (
-          <div class="page-edge-slice" data-target={i}></div>
-        ))}
-      </div>
+      <!-- Invisible click zones — right edge = next/open, left edge = prev/close -->
+      <div class="edge-zone edge-zone--right" id="edgeRight"></div>
+      <div class="edge-zone edge-zone--left" id="edgeLeft"></div>
     </div>
 
-    <!-- Nav -->
-    <div class="nav" id="nav" hidden>
-      <button class="nav-btn" id="prevBtn" aria-label="Previous page">&#8592;</button>
-      <span class="nav-info" id="navInfo"></span>
-      <button class="nav-btn" id="nextBtn" aria-label="Next page">&#8594;</button>
-    </div>
+    <!-- Page counter -->
+    <div class="page-counter" id="pageCounter"></div>
   </div>
 
   <script>
     const cover = document.getElementById('cover')!;
-    const coverOpenBtn = document.getElementById('coverOpenBtn')!;
-    const nav = document.getElementById('nav')!;
-    const navInfo = document.getElementById('navInfo')!;
-    const prevBtn = document.getElementById('prevBtn')!;
-    const nextBtn = document.getElementById('nextBtn')!;
+    const edgeRight = document.getElementById('edgeRight')!;
+    const edgeLeft = document.getElementById('edgeLeft')!;
+    const pageCounter = document.getElementById('pageCounter')!;
     const pageLeaves = Array.from(document.querySelectorAll<HTMLElement>('.page-leaf'));
-    const edgeSlices = Array.from(document.querySelectorAll<HTMLElement>('.page-edge-slice'));
     const contentsJumps = Array.from(document.querySelectorAll<HTMLElement>('.contents-jump'));
 
-    // leaf 0 = contents, leaves 1..n = artwork pages
-    // current: -1 = cover closed, 0 = contents visible, 1..n = artwork page visible
     let current = -1;
-    const total = pageLeaves.length; // includes contents leaf
+    const total = pageLeaves.length;
 
-    function updateNav() {
-      if (current < 0) { nav.hidden = true; return; }
-      nav.hidden = false;
-      // Display: contents = "Contents", others = "1 / 4" etc
-      navInfo.textContent = current === 0 ? 'Contents' : `${current} / ${total - 1}`;
-      (prevBtn as HTMLButtonElement).disabled = current <= 0;
-      (nextBtn as HTMLButtonElement).disabled = current >= total - 1;
+    function updateUI() {
+      if (current < 0) {
+        pageCounter.textContent = '';
+        edgeLeft.classList.remove('visible');
+        edgeRight.classList.add('visible');
+      } else {
+        edgeLeft.classList.add('visible');
+        edgeRight.classList.toggle('visible', current < total - 1);
+        pageCounter.textContent = current === 0 ? 'Contents' : `${current} / ${total - 1}`;
+      }
     }
 
     function applyState(index: number) {
@@ -120,20 +110,18 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       else cover.classList.remove('open');
 
       pageLeaves.forEach((leaf, i) => {
-        // leaves up to current index have been flipped; leaves after are still to come
         if (i <= index) leaf.classList.add('turned');
         else leaf.classList.remove('turned');
       });
 
       current = index;
-      updateNav();
+      updateUI();
     }
 
-    // Animated sequential flip from current to target
     function animateTo(target: number) {
       if (target === current) return;
       const step = target > current ? 1 : -1;
-      const FLIP_DELAY = 120; // ms between page flips
+      const FLIP_DELAY = 130;
 
       let i = current;
       function flipNext() {
@@ -142,13 +130,12 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         if (i !== target) setTimeout(flipNext, FLIP_DELAY);
       }
 
-      // Open cover first if needed, then start flipping
       if (target >= 0 && current < 0) {
         applyState(0);
         setTimeout(() => {
           i = 0;
           if (target !== 0) setTimeout(flipNext, FLIP_DELAY);
-        }, 460);
+        }, 480);
       } else {
         flipNext();
       }
@@ -160,16 +147,8 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       else if (current === 0) applyState(-1);
     }
 
-    coverOpenBtn.addEventListener('click', () => animateTo(0));
-    nextBtn.addEventListener('click', next);
-    prevBtn.addEventListener('click', prev);
-
-    edgeSlices.forEach((slice) => {
-      slice.addEventListener('click', () => {
-        const target = parseInt(slice.dataset.target ?? '0');
-        animateTo(target);
-      });
-    });
+    edgeRight.addEventListener('click', next);
+    edgeLeft.addEventListener('click', prev);
 
     contentsJumps.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -190,6 +169,6 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
     }, { passive: true });
 
-    updateNav();
+    updateUI();
   </script>
 </Base>
