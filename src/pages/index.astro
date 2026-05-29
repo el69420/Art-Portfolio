@@ -1,0 +1,183 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allPages = await getCollection('pages');
+const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
+---
+<Base title="Sketchbook">
+  <div class="scene">
+    <!-- Cover -->
+    <div class="book" id="book">
+      <div class="cover" id="cover">
+        <div class="cover-front">
+          <div class="elastic-h"></div>
+          <div class="elastic-v"></div>
+          <div class="cover-title">
+            <span class="cover-label">Sketchbook</span>
+            <span class="cover-sub">Vol. I</span>
+          </div>
+          <button class="cover-open-btn" id="coverOpenBtn" aria-label="Open sketchbook">Open</button>
+        </div>
+      </div>
+
+      <!-- Pages -->
+      {pages.map((page, i) => {
+        const rot = ((i * 37 + 7) % 11) - 5; // deterministic rotation -5..+5 deg
+        const num = String(i + 1).padStart(3, '0');
+        return (
+          <div class="page-leaf" data-index={i} id={`page-${i}`}>
+            <div class="page-inner">
+              <!-- Right side (recto) -->
+              <div class="page-recto">
+                <div class="ruled-lines"></div>
+                {page.data.image && (
+                  <div class="page-image-wrap" style={`--rot:${rot}deg`}>
+                    <img src={page.data.image} alt={page.data.title} class="page-image" />
+                  </div>
+                )}
+                <p class="page-caption">{page.data.caption}</p>
+                <div class="page-meta">
+                  {[page.data.date, page.data.location, page.data.materials]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </div>
+                {page.data.finished === false && <span class="unfinished-label">unfinished</span>}
+                <span class="page-number">{num}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      <!-- Page edge stack -->
+      <div class="page-edges" id="pageEdges">
+        {pages.map((_, i) => (
+          <div class="page-edge-slice" data-target={i}></div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav" id="nav" hidden>
+      <button class="nav-btn" id="prevBtn" aria-label="Previous page">&#8592;</button>
+      <span class="nav-info" id="navInfo"></span>
+      <button class="nav-btn" id="nextBtn" aria-label="Next page">&#8594;</button>
+      <button class="nav-btn contents-btn" id="contentsBtn">&#9776; Contents</button>
+    </div>
+
+    <!-- Contents overlay -->
+    <div class="contents-overlay" id="contentsOverlay" hidden>
+      <div class="contents-panel">
+        <h2 class="contents-heading">Contents</h2>
+        <ol class="contents-list">
+          {pages.map((page, i) => (
+            <li class="contents-item">
+              <button class="contents-jump" data-target={i}>
+                <span class="contents-num">{String(i + 1).padStart(3, '0')}</span>
+                <span class="contents-dots"></span>
+                <span class="contents-title">{page.data.title}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <button class="contents-close" id="contentsClose" aria-label="Close contents">&#x2715;</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const book = document.getElementById('book')!;
+    const cover = document.getElementById('cover')!;
+    const coverOpenBtn = document.getElementById('coverOpenBtn')!;
+    const nav = document.getElementById('nav')!;
+    const navInfo = document.getElementById('navInfo')!;
+    const prevBtn = document.getElementById('prevBtn')!;
+    const nextBtn = document.getElementById('nextBtn')!;
+    const contentsBtn = document.getElementById('contentsBtn')!;
+    const contentsOverlay = document.getElementById('contentsOverlay')!;
+    const contentsClose = document.getElementById('contentsClose')!;
+    const pageEdges = document.getElementById('pageEdges')!;
+    const pageLeaves = Array.from(document.querySelectorAll<HTMLElement>('.page-leaf'));
+    const edgeSlices = Array.from(document.querySelectorAll<HTMLElement>('.page-edge-slice'));
+    const contentsJumps = Array.from(document.querySelectorAll<HTMLElement>('.contents-jump'));
+
+    let current = -1; // -1 = cover closed
+    const total = pageLeaves.length;
+
+    function updateNav() {
+      if (current < 0) {
+        nav.hidden = true;
+        return;
+      }
+      nav.hidden = false;
+      navInfo.textContent = `${current + 1} / ${total}`;
+      (prevBtn as HTMLButtonElement).disabled = current <= 0;
+      (nextBtn as HTMLButtonElement).disabled = current >= total - 1;
+    }
+
+    function goTo(index: number) {
+      // Animate cover
+      if (index >= 0 && current < 0) {
+        cover.classList.add('open');
+      } else if (index < 0 && current >= 0) {
+        cover.classList.remove('open');
+      }
+
+      // Flip pages
+      pageLeaves.forEach((leaf, i) => {
+        if (i <= index) {
+          leaf.classList.add('turned');
+        } else {
+          leaf.classList.remove('turned');
+        }
+      });
+
+      current = index;
+      updateNav();
+    }
+
+    function next() { if (current < total - 1) goTo(current + 1); }
+    function prev() { if (current > 0) goTo(current - 1); else if (current === 0) goTo(-1); }
+
+    coverOpenBtn.addEventListener('click', () => goTo(0));
+    nextBtn.addEventListener('click', next);
+    prevBtn.addEventListener('click', prev);
+
+    // Edge clicks
+    edgeSlices.forEach((slice) => {
+      slice.addEventListener('click', () => {
+        const target = parseInt(slice.dataset.target ?? '0');
+        goTo(target);
+      });
+    });
+
+    // Contents
+    contentsBtn.addEventListener('click', () => { contentsOverlay.hidden = false; });
+    contentsClose.addEventListener('click', () => { contentsOverlay.hidden = true; });
+    contentsJumps.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = parseInt(btn.dataset.target ?? '0');
+        goTo(target);
+        contentsOverlay.hidden = true;
+      });
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
+      else if (e.key === 'Escape') contentsOverlay.hidden = true;
+    });
+
+    // Swipe
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
+    }, { passive: true });
+
+    updateNav();
+  </script>
+</Base>
