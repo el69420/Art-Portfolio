@@ -8,8 +8,9 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
 ---
 <Base title="Sketchbook">
   <div class="scene">
-    <!-- Cover -->
     <div class="book" id="book">
+
+      <!-- Cover -->
       <div class="cover" id="cover">
         <div class="cover-front">
           <div class="elastic-h"></div>
@@ -22,14 +23,36 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         </div>
       </div>
 
-      <!-- Pages -->
+      <!-- Contents page (leaf 0) -->
+      <div class="page-leaf" data-index="0" id="page-0">
+        <div class="page-inner">
+          <div class="page-recto">
+            <div class="ruled-lines"></div>
+            <h2 class="contents-page-heading">Contents</h2>
+            <ol class="contents-page-list">
+              {pages.map((page, i) => (
+                <li class="contents-page-item">
+                  <button class="contents-jump" data-target={i + 1}>
+                    <span class="contents-num">{String(i + 1).padStart(3, '0')}</span>
+                    <span class="contents-dots"></span>
+                    <span class="contents-title">{page.data.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <span class="page-number">000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Artwork pages (leaves 1…n) -->
       {pages.map((page, i) => {
-        const rot = ((i * 37 + 7) % 11) - 5; // deterministic rotation -5..+5 deg
+        const rot = ((i * 37 + 7) % 11) - 5;
         const num = String(i + 1).padStart(3, '0');
+        const leafIndex = i + 1;
         return (
-          <div class="page-leaf" data-index={i} id={`page-${i}`}>
+          <div class="page-leaf" data-index={leafIndex} id={`page-${leafIndex}`}>
             <div class="page-inner">
-              <!-- Right side (recto) -->
               <div class="page-recto">
                 <div class="ruled-lines"></div>
                 {page.data.image && (
@@ -53,7 +76,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
 
       <!-- Page edge stack -->
       <div class="page-edges" id="pageEdges">
-        {pages.map((_, i) => (
+        {[...Array(pages.length + 1)].map((_, i) => (
           <div class="page-edge-slice" data-target={i}></div>
         ))}
       </div>
@@ -64,114 +87,104 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       <button class="nav-btn" id="prevBtn" aria-label="Previous page">&#8592;</button>
       <span class="nav-info" id="navInfo"></span>
       <button class="nav-btn" id="nextBtn" aria-label="Next page">&#8594;</button>
-      <button class="nav-btn contents-btn" id="contentsBtn">&#9776; Contents</button>
-    </div>
-
-    <!-- Contents overlay -->
-    <div class="contents-overlay" id="contentsOverlay" hidden>
-      <div class="contents-panel">
-        <h2 class="contents-heading">Contents</h2>
-        <ol class="contents-list">
-          {pages.map((page, i) => (
-            <li class="contents-item">
-              <button class="contents-jump" data-target={i}>
-                <span class="contents-num">{String(i + 1).padStart(3, '0')}</span>
-                <span class="contents-dots"></span>
-                <span class="contents-title">{page.data.title}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <button class="contents-close" id="contentsClose" aria-label="Close contents">&#x2715;</button>
-      </div>
     </div>
   </div>
 
   <script>
-    const book = document.getElementById('book')!;
     const cover = document.getElementById('cover')!;
     const coverOpenBtn = document.getElementById('coverOpenBtn')!;
     const nav = document.getElementById('nav')!;
     const navInfo = document.getElementById('navInfo')!;
     const prevBtn = document.getElementById('prevBtn')!;
     const nextBtn = document.getElementById('nextBtn')!;
-    const contentsBtn = document.getElementById('contentsBtn')!;
-    const contentsOverlay = document.getElementById('contentsOverlay')!;
-    const contentsClose = document.getElementById('contentsClose')!;
-    const pageEdges = document.getElementById('pageEdges')!;
     const pageLeaves = Array.from(document.querySelectorAll<HTMLElement>('.page-leaf'));
     const edgeSlices = Array.from(document.querySelectorAll<HTMLElement>('.page-edge-slice'));
     const contentsJumps = Array.from(document.querySelectorAll<HTMLElement>('.contents-jump'));
 
-    let current = -1; // -1 = cover closed
-    const total = pageLeaves.length;
+    // leaf 0 = contents, leaves 1..n = artwork pages
+    // current: -1 = cover closed, 0 = contents visible, 1..n = artwork page visible
+    let current = -1;
+    const total = pageLeaves.length; // includes contents leaf
 
     function updateNav() {
-      if (current < 0) {
-        nav.hidden = true;
-        return;
-      }
+      if (current < 0) { nav.hidden = true; return; }
       nav.hidden = false;
-      navInfo.textContent = `${current + 1} / ${total}`;
+      // Display: contents = "Contents", others = "1 / 4" etc
+      navInfo.textContent = current === 0 ? 'Contents' : `${current} / ${total - 1}`;
       (prevBtn as HTMLButtonElement).disabled = current <= 0;
       (nextBtn as HTMLButtonElement).disabled = current >= total - 1;
     }
 
-    function goTo(index: number) {
-      // Animate cover
-      if (index >= 0 && current < 0) {
-        cover.classList.add('open');
-      } else if (index < 0 && current >= 0) {
-        cover.classList.remove('open');
-      }
+    function applyState(index: number) {
+      if (index >= 0) cover.classList.add('open');
+      else cover.classList.remove('open');
 
-      // Flip pages
       pageLeaves.forEach((leaf, i) => {
-        if (i <= index) {
-          leaf.classList.add('turned');
-        } else {
-          leaf.classList.remove('turned');
-        }
+        // leaf i is "turned" (flipped away) when we've moved past it
+        // i.e. leaf index <= index means it's been flipped
+        if (i < index) leaf.classList.add('turned');
+        else leaf.classList.remove('turned');
       });
 
       current = index;
       updateNav();
     }
 
-    function next() { if (current < total - 1) goTo(current + 1); }
-    function prev() { if (current > 0) goTo(current - 1); else if (current === 0) goTo(-1); }
+    // Animated sequential flip from current to target
+    function animateTo(target: number) {
+      if (target === current) return;
+      const step = target > current ? 1 : -1;
+      const FLIP_DELAY = 120; // ms between page flips
 
-    coverOpenBtn.addEventListener('click', () => goTo(0));
+      let i = current;
+      function flipNext() {
+        i += step;
+        applyState(i);
+        if (i !== target) setTimeout(flipNext, FLIP_DELAY);
+      }
+
+      // Open cover instantly if needed then start flipping
+      if (target >= 0 && current < 0) {
+        cover.classList.add('open');
+        current = 0;
+        setTimeout(() => {
+          i = 0;
+          if (target !== 0) setTimeout(flipNext, FLIP_DELAY);
+        }, 460);
+      } else {
+        flipNext();
+      }
+    }
+
+    function next() { if (current < total - 1) animateTo(current + 1); }
+    function prev() {
+      if (current > 0) animateTo(current - 1);
+      else if (current === 0) applyState(-1);
+    }
+
+    coverOpenBtn.addEventListener('click', () => animateTo(0));
     nextBtn.addEventListener('click', next);
     prevBtn.addEventListener('click', prev);
 
-    // Edge clicks
     edgeSlices.forEach((slice) => {
       slice.addEventListener('click', () => {
         const target = parseInt(slice.dataset.target ?? '0');
-        goTo(target);
+        animateTo(target);
       });
     });
 
-    // Contents
-    contentsBtn.addEventListener('click', () => { contentsOverlay.hidden = false; });
-    contentsClose.addEventListener('click', () => { contentsOverlay.hidden = true; });
     contentsJumps.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const target = parseInt(btn.dataset.target ?? '0');
-        goTo(target);
-        contentsOverlay.hidden = true;
+        const target = parseInt(btn.dataset.target ?? '1');
+        animateTo(target);
       });
     });
 
-    // Keyboard
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
-      else if (e.key === 'Escape') contentsOverlay.hidden = true;
     });
 
-    // Swipe
     let touchStartX = 0;
     document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
     document.addEventListener('touchend', (e) => {

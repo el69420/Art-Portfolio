@@ -360,3 +360,50 @@ body {
   .page-image { width: 200px; height: 150px; }
   .page-image-wrap { max-width: 212px; }
 }
+
+/* Contents page (in-book) */
+.contents-page-heading {
+  font-family: var(--font-hand);
+  font-size: 2rem;
+  color: var(--ink);
+  margin-bottom: 24px;
+  z-index: 1;
+}
+.contents-page-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1;
+}
+.contents-page-item {
+  display: flex;
+}
+.contents-jump {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  padding: 2px 0;
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-size: 0.95rem;
+  text-align: left;
+  transition: color 150ms;
+}
+.contents-jump:hover { color: #8a4a10; }
+.contents-num {
+  font-family: var(--font-hand);
+  font-size: 0.9rem;
+  color: var(--muted);
+  min-width: 36px;
+}
+.contents-dots {
+  flex: 1;
+  border-bottom: 1.5px dotted #c8b890;
+  margin: 0 8px;
+  margin-bottom: 3px;
+}
+.contents-title { white-space: nowrap; }
