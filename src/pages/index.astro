@@ -8,6 +8,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
 ---
 <Base title="Sketchbook">
   <div class="scene">
+    <div class="book-wrapper" id="bookWrapper">
     <div class="book" id="book">
 
       <!-- Left page area (verso) — revealed when cover opens -->
@@ -84,12 +85,14 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       <div class="edge-zone edge-zone--right" id="edgeRight"></div>
       <div class="edge-zone edge-zone--left" id="edgeLeft"></div>
     </div>
+    </div>
 
     <div class="page-counter" id="pageCounter"></div>
   </div>
 
   <script>
     const cover = document.getElementById('cover')!;
+    const bookWrapper = document.getElementById('bookWrapper')!;
     const bookLeft = document.getElementById('bookLeft')!;
     const edgeRight = document.getElementById('edgeRight')!;
     const edgeLeft = document.getElementById('edgeLeft')!;
@@ -101,6 +104,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
     const total = pageLeaves.length;
 
     function updateUI() {
+      bookWrapper.classList.toggle('open', current >= 0);
       bookLeft.classList.toggle('visible', current >= 0);
       edgeLeft.classList.toggle('visible', current >= 0);
       edgeRight.classList.toggle('visible', current < total - 1);
