@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="260" height="200">
+  <rect width="260" height="200" fill="#f8f4ee"/>
+  <!-- Left peak -->
+  <polygon points="30,180 100,40 170,180" fill="none" stroke="#1a0f00" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Right peak (offset, taller) -->
+  <polygon points="80,180 155,20 230,180" fill="none" stroke="#1a0f00" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- Snow caps -->
+  <polygon points="100,40 88,78 112,78" fill="#1a0f00"/>
+  <polygon points="155,20 140,62 170,62" fill="#1a0f00"/>
+  <!-- Wave foreground -->
+  <path d="M0 165 Q20 148 40 165 Q60 182 80 165 Q100 148 120 165 Q140 182 160 165 Q180 148 200 165 Q220 182 240 165 Q255 153 260 160 L260 200 L0 200Z" fill="#1a0f00"/>
+  <!-- Inner wave crest lines -->
+  <path d="M0 155 Q20 140 40 155 Q60 170 80 155 Q100 140 120 155 Q140 170 160 155 Q180 140 200 155 Q220 170 240 155" fill="none" stroke="#1a0f00" stroke-width="1.5"/>
+  <!-- Sky hatching on mountains -->
+  <line x1="90" y1="55" x2="85" y2="70" stroke="#1a0f00" stroke-width="0.8" opacity="0.5"/>
+  <line x1="110" y1="55" x2="115" y2="70" stroke="#1a0f00" stroke-width="0.8" opacity="0.5"/>
+  <line x1="145" y1="35" x2="140" y2="52" stroke="#1a0f00" stroke-width="0.8" opacity="0.5"/>
+  <line x1="165" y1="35" x2="170" y2="52" stroke="#1a0f00" stroke-width="0.8" opacity="0.5"/>
+</svg>

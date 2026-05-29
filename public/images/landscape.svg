@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" width="280" height="200">
+  <rect width="280" height="200" fill="#e8f4f8"/>
+  <!-- Sky wash -->
+  <rect width="280" height="130" fill="#b8d8e8" opacity="0.5"/>
+  <!-- Distant hills -->
+  <ellipse cx="60" cy="130" rx="80" ry="40" fill="#8aaa88" opacity="0.6"/>
+  <ellipse cx="180" cy="125" rx="100" ry="50" fill="#6a9468" opacity="0.55"/>
+  <ellipse cx="260" cy="140" rx="70" ry="35" fill="#7aaa78" opacity="0.5"/>
+  <!-- Water reflection -->
+  <rect x="0" y="150" width="280" height="50" fill="#7ab8d0" opacity="0.45"/>
+  <!-- Ground -->
+  <ellipse cx="140" cy="165" rx="160" ry="30" fill="#9aaa6a" opacity="0.7"/>
+  <!-- Sun -->
+  <circle cx="210" cy="48" r="22" fill="#f8e870" opacity="0.75"/>
+  <!-- Cloud wisps -->
+  <ellipse cx="70" cy="38" rx="35" ry="12" fill="white" opacity="0.7"/>
+  <ellipse cx="55" cy="40" rx="20" ry="9" fill="white" opacity="0.6"/>
+  <!-- Water lines -->
+  <line x1="20" y1="158" x2="80" y2="158" stroke="#5a98b8" stroke-width="1" opacity="0.5"/>
+  <line x1="110" y1="162" x2="200" y2="162" stroke="#5a98b8" stroke-width="1" opacity="0.5"/>
+  <line x1="220" y1="156" x2="270" y2="156" stroke="#5a98b8" stroke-width="1" opacity="0.4"/>
+</svg>
