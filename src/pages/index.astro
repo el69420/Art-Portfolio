@@ -10,7 +10,15 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
   <div class="scene">
     <div class="book" id="book">
 
-      <!-- Cover -->
+      <!-- Left page area (verso) — revealed when cover opens -->
+      <div class="book-left" id="bookLeft">
+        <div class="book-left-paper"></div>
+      </div>
+
+      <!-- Spine -->
+      <div class="spine"></div>
+
+      <!-- Cover — full width when closed, flips left when opened -->
       <div class="cover" id="cover">
         <div class="cover-front">
           <div class="elastic-h"></div>
@@ -20,27 +28,27 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
             <span class="cover-sub">Vol. I</span>
           </div>
         </div>
+        <div class="cover-back"></div>
       </div>
 
-      <!-- Contents page (leaf 0) — highest z-index, sits on top -->
+      <!-- Contents page (leaf 0) — right half, flips from spine -->
       <div class="page-leaf" data-index="0" id="page-0" style={`z-index:${pages.length + 1}`}>
-        <div class="page-inner">
-          <div class="page-recto">
-            <h2 class="contents-page-heading">Contents</h2>
-            <ol class="contents-page-list">
-              {pages.map((page, i) => (
-                <li class="contents-page-item">
-                  <button class="contents-jump" data-target={i + 1}>
-                    <span class="contents-num">{String(i + 1).padStart(3, '0')}</span>
-                    <span class="contents-dots"></span>
-                    <span class="contents-title">{page.data.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-            <span class="page-number">000</span>
-          </div>
+        <div class="page-recto">
+          <h2 class="contents-page-heading">Contents</h2>
+          <ol class="contents-page-list">
+            {pages.map((page, i) => (
+              <li class="contents-page-item">
+                <button class="contents-jump" data-target={i + 1}>
+                  <span class="contents-num">{String(i + 1).padStart(3, '0')}</span>
+                  <span class="contents-dots"></span>
+                  <span class="contents-title">{page.data.title}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <span class="page-number">000</span>
         </div>
+        <div class="page-verso"></div>
       </div>
 
       <!-- Artwork pages (leaves 1…n) -->
@@ -50,40 +58,39 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         const leafIndex = i + 1;
         return (
           <div class="page-leaf" data-index={leafIndex} id={`page-${leafIndex}`} style={`z-index:${pages.length + 1 - leafIndex}`}>
-            <div class="page-inner">
-              <div class="page-recto">
-                {page.data.image && (
-                  <div class="page-image-wrap" style={`--rot:${rot}deg`}>
-                    <div class="page-image-mount">
-                      <img src={`${base}${page.data.image}`} alt={page.data.title} class="page-image" />
-                    </div>
+            <div class="page-recto">
+              {page.data.image && (
+                <div class="page-image-wrap" style={`--rot:${rot}deg`}>
+                  <div class="page-image-mount">
+                    <img src={`${base}${page.data.image}`} alt={page.data.title} class="page-image" />
                   </div>
-                )}
-                <p class="page-caption">{page.data.caption}</p>
-                <div class="page-meta">
-                  {[page.data.date, page.data.location, page.data.materials]
-                    .filter(Boolean)
-                    .join(' · ')}
                 </div>
-                {page.data.finished === false && <span class="unfinished-label">unfinished</span>}
-                <span class="page-number">{num}</span>
+              )}
+              <p class="page-caption">{page.data.caption}</p>
+              <div class="page-meta">
+                {[page.data.date, page.data.location, page.data.materials]
+                  .filter(Boolean)
+                  .join(' · ')}
               </div>
+              {page.data.finished === false && <span class="unfinished-label">unfinished</span>}
+              <span class="page-number">{num}</span>
             </div>
+            <div class="page-verso"></div>
           </div>
         );
       })}
 
-      <!-- Invisible click zones — right edge = next/open, left edge = prev/close -->
+      <!-- Edge click zones -->
       <div class="edge-zone edge-zone--right" id="edgeRight"></div>
       <div class="edge-zone edge-zone--left" id="edgeLeft"></div>
     </div>
 
-    <!-- Page counter -->
     <div class="page-counter" id="pageCounter"></div>
   </div>
 
   <script>
     const cover = document.getElementById('cover')!;
+    const bookLeft = document.getElementById('bookLeft')!;
     const edgeRight = document.getElementById('edgeRight')!;
     const edgeLeft = document.getElementById('edgeLeft')!;
     const pageCounter = document.getElementById('pageCounter')!;
@@ -94,26 +101,18 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
     const total = pageLeaves.length;
 
     function updateUI() {
-      if (current < 0) {
-        pageCounter.textContent = '';
-        edgeLeft.classList.remove('visible');
-        edgeRight.classList.add('visible');
-      } else {
-        edgeLeft.classList.add('visible');
-        edgeRight.classList.toggle('visible', current < total - 1);
-        pageCounter.textContent = current === 0 ? 'Contents' : `${current} / ${total - 1}`;
-      }
+      bookLeft.classList.toggle('visible', current >= 0);
+      edgeLeft.classList.toggle('visible', current >= 0);
+      edgeRight.classList.toggle('visible', current < total - 1);
+      pageCounter.textContent = current < 0 ? '' : current === 0 ? 'Contents' : `${current} / ${total - 1}`;
     }
 
     function applyState(index: number) {
-      if (index >= 0) cover.classList.add('open');
-      else cover.classList.remove('open');
-
+      cover.classList.toggle('open', index >= 0);
       pageLeaves.forEach((leaf, i) => {
         if (i <= index) leaf.classList.add('turned');
         else leaf.classList.remove('turned');
       });
-
       current = index;
       updateUI();
     }
@@ -121,9 +120,9 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
     function animateTo(target: number) {
       if (target === current) return;
       const step = target > current ? 1 : -1;
-      const FLIP_DELAY = 130;
-
+      const FLIP_DELAY = 140;
       let i = current;
+
       function flipNext() {
         i += step;
         applyState(i);
@@ -132,10 +131,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
 
       if (target >= 0 && current < 0) {
         applyState(0);
-        setTimeout(() => {
-          i = 0;
-          if (target !== 0) setTimeout(flipNext, FLIP_DELAY);
-        }, 480);
+        setTimeout(() => { i = 0; if (target !== 0) setTimeout(flipNext, FLIP_DELAY); }, 500);
       } else {
         flipNext();
       }
@@ -150,11 +146,8 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
     edgeRight.addEventListener('click', next);
     edgeLeft.addEventListener('click', prev);
 
-    contentsJumps.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const target = parseInt(btn.dataset.target ?? '1');
-        animateTo(target);
-      });
+    contentsJumps.forEach(btn => {
+      btn.addEventListener('click', () => animateTo(parseInt(btn.dataset.target ?? '1')));
     });
 
     document.addEventListener('keydown', (e) => {
