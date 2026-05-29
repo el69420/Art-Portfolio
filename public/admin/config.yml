@@ -3,7 +3,7 @@ backend:
   repo: el69420/Art-Portfolio
   branch: main
   auth_type: implicit
-  app_id: REPLACE_WITH_YOUR_CLIENT_ID
+  app_id: Ov23liiqmWGnDcUq5K03
 
 media_folder: public/images
 public_folder: /Art-Portfolio/images
