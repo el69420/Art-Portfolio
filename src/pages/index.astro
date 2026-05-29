@@ -120,9 +120,8 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       else cover.classList.remove('open');
 
       pageLeaves.forEach((leaf, i) => {
-        // leaf i is "turned" (flipped away) when we've moved past it
-        // i.e. leaf index <= index means it's been flipped
-        if (i < index) leaf.classList.add('turned');
+        // leaves after current index stack on top — flip them away to reveal current
+        if (i > index) leaf.classList.add('turned');
         else leaf.classList.remove('turned');
       });
 
@@ -143,10 +142,9 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         if (i !== target) setTimeout(flipNext, FLIP_DELAY);
       }
 
-      // Open cover instantly if needed then start flipping
+      // Open cover first if needed, then start flipping
       if (target >= 0 && current < 0) {
-        cover.classList.add('open');
-        current = 0;
+        applyState(0);
         setTimeout(() => {
           i = 0;
           if (target !== 0) setTimeout(flipNext, FLIP_DELAY);
