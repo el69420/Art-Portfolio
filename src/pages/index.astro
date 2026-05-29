@@ -19,6 +19,11 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       <!-- Spine -->
       <div class="spine"></div>
 
+      <!-- Back cover — fixed behind all pages, revealed when last page is turned -->
+      <div class="back-cover">
+        <div class="back-cover-inner"></div>
+      </div>
+
       <!-- Cover — full width when closed, flips left when opened -->
       <div class="cover" id="cover">
         <div class="cover-front">
