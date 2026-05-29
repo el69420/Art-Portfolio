@@ -27,7 +27,6 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       <div class="page-leaf" data-index="0" id="page-0" style={`z-index:${pages.length + 1}`}>
         <div class="page-inner">
           <div class="page-recto">
-            <div class="ruled-lines"></div>
             <h2 class="contents-page-heading">Contents</h2>
             <ol class="contents-page-list">
               {pages.map((page, i) => (
@@ -54,10 +53,11 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
           <div class="page-leaf" data-index={leafIndex} id={`page-${leafIndex}`} style={`z-index:${pages.length + 1 - leafIndex}`}>
             <div class="page-inner">
               <div class="page-recto">
-                <div class="ruled-lines"></div>
                 {page.data.image && (
                   <div class="page-image-wrap" style={`--rot:${rot}deg`}>
-                    <img src={`${base}${page.data.image}`} alt={page.data.title} class="page-image" />
+                    <div class="page-image-mount">
+                      <img src={`${base}${page.data.image}`} alt={page.data.title} class="page-image" />
+                    </div>
                   </div>
                 )}
                 <p class="page-caption">{page.data.caption}</p>
