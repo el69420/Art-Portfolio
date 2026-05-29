@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
+const base = '/Art-Portfolio';
 const allPages = await getCollection('pages');
 const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
 ---
@@ -33,7 +34,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
                 <div class="ruled-lines"></div>
                 {page.data.image && (
                   <div class="page-image-wrap" style={`--rot:${rot}deg`}>
-                    <img src={page.data.image} alt={page.data.title} class="page-image" />
+                    <img src={`${base}${page.data.image}`} alt={page.data.title} class="page-image" />
                   </div>
                 )}
                 <p class="page-caption">{page.data.caption}</p>
