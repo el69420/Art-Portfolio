@@ -23,8 +23,8 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         </div>
       </div>
 
-      <!-- Contents page (leaf 0) -->
-      <div class="page-leaf" data-index="0" id="page-0">
+      <!-- Contents page (leaf 0) — highest z-index, sits on top -->
+      <div class="page-leaf" data-index="0" id="page-0" style={`z-index:${pages.length + 1}`}>
         <div class="page-inner">
           <div class="page-recto">
             <div class="ruled-lines"></div>
@@ -51,7 +51,7 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
         const num = String(i + 1).padStart(3, '0');
         const leafIndex = i + 1;
         return (
-          <div class="page-leaf" data-index={leafIndex} id={`page-${leafIndex}`}>
+          <div class="page-leaf" data-index={leafIndex} id={`page-${leafIndex}`} style={`z-index:${pages.length + 1 - leafIndex}`}>
             <div class="page-inner">
               <div class="page-recto">
                 <div class="ruled-lines"></div>
@@ -120,8 +120,8 @@ const pages = allPages.sort((a, b) => a.id.localeCompare(b.id));
       else cover.classList.remove('open');
 
       pageLeaves.forEach((leaf, i) => {
-        // leaves after current index stack on top — flip them away to reveal current
-        if (i > index) leaf.classList.add('turned');
+        // leaves up to current index have been flipped; leaves after are still to come
+        if (i <= index) leaf.classList.add('turned');
         else leaf.classList.remove('turned');
       });
 
