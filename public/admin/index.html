@@ -4,7 +4,58 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sketchbook CMS</title>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   </head>
-  <body></body>
+  <body>
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+      CMS.init({
+        config: {
+          backend: {
+            name: 'github',
+            repo: 'el69420/Art-Portfolio',
+            branch: 'main',
+            auth_type: 'implicit',
+            app_id: 'Ov23liiqmWGnDcUq5K03',
+          },
+          media_folder: 'public/images',
+          public_folder: '/Art-Portfolio/images',
+          collections: [
+            {
+              name: 'pages',
+              label: 'Sketchbook Pages',
+              label_singular: 'Page',
+              folder: 'src/content/pages',
+              create: true,
+              delete: true,
+              slug: '{{slug}}',
+              summary: '{{title}}',
+              fields: [
+                { label: 'Title', name: 'title', widget: 'string' },
+                { label: 'Caption', name: 'caption', widget: 'string', hint: 'The handwritten caption shown on the page' },
+                { label: 'Date', name: 'date', widget: 'date', required: false, format: 'YYYY-MM-DD', hint: 'When this was made (optional)' },
+                { label: 'Location', name: 'location', widget: 'string', required: false },
+                { label: 'Materials', name: 'materials', widget: 'string', required: false, hint: 'e.g. Watercolour, graphite, ink' },
+                {
+                  label: 'Category', name: 'category', widget: 'select', required: false,
+                  options: [
+                    { label: 'Portrait', value: 'portrait' },
+                    { label: 'Landscape', value: 'landscape' },
+                    { label: 'Study', value: 'study' },
+                    { label: 'Ink', value: 'ink' },
+                    { label: 'Watercolour', value: 'watercolour' },
+                    { label: 'Note', value: 'note' },
+                  ],
+                },
+                { label: 'Image', name: 'image', widget: 'image', required: false, hint: 'Upload your artwork photo or scan' },
+                { label: 'Finished', name: 'finished', widget: 'boolean', required: false, default: true, hint: 'Uncheck to show an "unfinished" stamp' },
+              ],
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
 </html>
