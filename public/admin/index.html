@@ -18,7 +18,7 @@
             name: 'github',
             repo: 'el69420/Art-Portfolio',
             branch: 'main',
-            auth_type: 'implicit',
+            auth_type: 'pkce',
             app_id: 'Ov23liiqmWGnDcUq5K03',
           },
           media_folder: 'public/images',
@@ -36,7 +36,7 @@
               fields: [
                 { label: 'Title', name: 'title', widget: 'string' },
                 { label: 'Caption', name: 'caption', widget: 'string', hint: 'The handwritten caption shown on the page' },
-                { label: 'Date', name: 'date', widget: 'date', required: false, format: 'YYYY-MM-DD', hint: 'When this was made (optional)' },
+                { label: 'Date', name: 'date', widget: 'datetime', required: false, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, hint: 'When this was made (optional)' },
                 { label: 'Location', name: 'location', widget: 'string', required: false },
                 { label: 'Materials', name: 'materials', widget: 'string', required: false, hint: 'e.g. Watercolour, graphite, ink' },
                 {
